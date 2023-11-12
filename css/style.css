@@ -68,7 +68,7 @@ header {
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: right;
+  justify-content: center;
   text-align: right;
   color: #f4f4f4;
   color: var(--text-color);
@@ -78,6 +78,13 @@ header {
   height: 6vmax;
   padding: 0.5vmax;
   padding-right: 2%;
+}
+
+header input[type="text"] {
+  float: right;
+  border: none;
+  font-size: 2vmax;
+  height: 3vmax;
 }
 
 /* Main */
