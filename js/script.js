@@ -1,6 +1,6 @@
 /* Global Constants */
 
-const TIDE_DATA_URL = "https://apero.cybai.re/tide?id=72";
+const TIDE_DATA_URL = "https://api.cybai.re/tide?id=72";
 const INTERVAL = 1000;
 
 /* Global Variables */
