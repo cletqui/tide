@@ -62,7 +62,6 @@ const fetchTide = async () => {
       },
     };
     const response = await fetch(TIDE_DATA_URL, requestOptions);
-    console.log(response);
     const tideData = await response.json(); // Parse the response as JSON
     tide = tideData;
     return tideData;
@@ -88,7 +87,6 @@ const setTime = () => {
     const next_date = new Date(next_timestamp);
 
     if ((last_timestamp <= now_timestamp) & (now_timestamp <= next_timestamp)) {
-      console.log("caca");
       degrees = calculateDegrees(next_tide_type, now, last_date, next_date);
     } else {
       degrees = next_tide_type == "high_tide" ? 90 : 270; // Keep hand in specific place regarding the last known tide type
