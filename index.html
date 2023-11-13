@@ -18,16 +18,19 @@
 
   <body>
     <header id="header" class="menu-hidden">
-      <input type="text" placeholder="Roscoff" />
+      <input id="search-bar" type="text" title="search-bar" placeholder="" />
     </header>
 
     <main>
       <div id="clock" class="clock">
-        <div id="pm" class="tick pm"></div>
-        <div id="hpm" class="tick hpm"></div>
-        <div id="bm" class="tick bm"></div>
-        <div id="hbm" class="tick hbm"></div>
         <div id="hand" class="hand"></div>
+        <div class="inner-clock-face"></div>
+        <div class="outer-clock-face">
+          <div class="marking marking-one"></div>
+          <div class="marking marking-two"></div>
+          <div class="marking marking-three"></div>
+          <div class="marking marking-four"></div>
+        </div>
       </div>
     </main>
 

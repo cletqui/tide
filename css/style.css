@@ -69,7 +69,7 @@ header {
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  text-align: right;
+  text-align: center;
   color: #f4f4f4;
   color: var(--text-color);
   position: fixed;
@@ -83,6 +83,10 @@ header {
 header input[type="text"] {
   float: right;
   border: none;
+  text-align: center;
+  font-family: "Roboto Mono", monospace;
+  background-color: #1a1a1a;
+  background-color: var(--background-color);
   font-size: 2vmax;
   height: 3vmax;
 }
@@ -102,50 +106,96 @@ main .clock {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  position: relative;
   align-items: center;
   width: 50vmin;
   height: 50vmin;
-  border: 10px solid #f4f4f4;
-  border: 10px solid var(--text-color);
   border-radius: 50%;
   margin: 1vmin auto;
   position: relative;
   padding: 3vmin;
   background: #1a1a1a;
   background: var(--background-color);
+  border: 7px solid #282828;
+  box-shadow: -4px -4px 10px rgba(67, 67, 67, 0.5),
+    inset 4px 4px 10px rgba(0, 0, 0, 0.5),
+    inset -4px -4px 10px rgba(67, 67, 67, 0.5), 4px 4px 10px rgba(0, 0, 0, 0.3);
+  border-radius: 50%;
 }
 
-main .tick {
+.outer-clock-face {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  border-radius: 100%;
+}
+
+.outer-clock-face::after {
+  -webkit-transform: rotate(90deg);
+  -moz-transform: rotate(90deg);
+  transform: rotate(90deg);
+}
+
+.outer-clock-face::after,
+.outer-clock-face::before,
+.outer-clock-face .marking {
+  content: "";
   position: absolute;
   width: 5px;
-  height: 2%;
-  background: #f4f4f4;
-  background: var(--text-color);
-  left: 50%;
+  height: 100%;
+  background: #f4f4f4aa;
+  z-index: 0;
+  left: 49%;
 }
 
-main .pm {
-  top: 0;
+.outer-clock-face .marking {
+  background: #f4f4f44f;
+  width: 3px;
 }
 
-main .bm {
-  top: 98.3%;
+.outer-clock-face .marking.marking-one {
+  -webkit-transform: rotate(30deg);
+  -moz-transform: rotate(30deg);
+  transform: rotate(30deg);
 }
 
-main .hpm {
-  left: 98.3%;
-  transform: rotate(90deg);
+.outer-clock-face .marking.marking-two {
+  -webkit-transform: rotate(60deg);
+  -moz-transform: rotate(60deg);
+  transform: rotate(60deg);
 }
 
-main .hbm {
-  left: 0.3%;
-  transform: rotate(90deg);
+.outer-clock-face .marking.marking-three {
+  -webkit-transform: rotate(120deg);
+  -moz-transform: rotate(120deg);
+  transform: rotate(120deg);
+}
+
+.outer-clock-face .marking.marking-four {
+  -webkit-transform: rotate(150deg);
+  -moz-transform: rotate(150deg);
+  transform: rotate(150deg);
+}
+
+.inner-clock-face {
+  position: absolute;
+  top: 10%;
+  left: 10%;
+  width: 80%;
+  height: 80%;
+  background: #1a1a1a;
+  background: var(--background-color);
+  -webkit-border-radius: 100%;
+  -moz-border-radius: 100%;
+  border-radius: 100%;
+  z-index: 1;
 }
 
 main .hand {
-  width: 45%;
+  width: 32%;
   right: 50%;
-  height: 10px;
+  height: 12px;
   background: #f4f4f4;
   background: var(--text-color);
   position: absolute;
@@ -154,6 +204,7 @@ main .hand {
   transform-origin: 100%;
   transform: rotate(90deg);
   transition-timing-function: cubic-bezier(0.1, 2.7, 0.58, 1);
+  z-index: 2;
 }
 
 /* Footer */
