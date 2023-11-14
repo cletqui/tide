@@ -11,6 +11,7 @@
   --background-color: #1a1a1a; /* Background color */
   --background-color-svg: brightness(0) saturate(100%) invert(5%) sepia(2%)
     saturate(48%) hue-rotate(314deg) brightness(101%) contrast(89%); /* #1a1a1a */ /* Background color for svg icons */
+  --border-color: #282828; /* Border color */
   --header-background-color: #000000; /* Header background color */
   --header-background-color-svg: brightness(0) saturate(100%) invert(0%)
     sepia(27%) saturate(6520%) hue-rotate(33deg) brightness(91%) contrast(106%); /* #000000 */ /* Header background color for svg icons */
@@ -31,6 +32,7 @@
   --background-color: #f4f4f4; /* Background color */
   --background-color-svg: brightness(0) saturate(100%) invert(82%) sepia(100%)
     saturate(15%) hue-rotate(355deg) brightness(109%) contrast(91%); /* #f4f4f4 */ /* Background color for svg icons */
+  --border-color: #666666; /* Border color */
   --header-background-color: #aaaaaa; /* Header background color */
   --header-background-color-svg: brightness(0) saturate(100%) invert(65%)
     sepia(0%) saturate(604%) hue-rotate(174deg) brightness(106%) contrast(87%); /* #aaaaaa */ /* Header background color for svg icons */
@@ -53,10 +55,8 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background-color: #1a1a1a;
-  background-color: var(--background-color);
-  color: #f4f4f4;
-  color: var(--text-color);
+  background-color: var(--background-color, #1a1a1a);
+  color: var(--text-color, #f4f4f4);
   margin: 0;
   padding: 0;
   height: 100vh;
@@ -66,29 +66,46 @@ body {
 
 header {
   display: flex;
-  flex-direction: row;
+  vertical-align: middle;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  color: #f4f4f4;
-  color: var(--text-color);
   position: fixed;
   top: 0;
   width: 100%;
   height: 6vmax;
-  padding: 0.5vmax;
-  padding-right: 2%;
+}
+
+header input {
+  outline: none;
+  display: inline-block;
+  width: 90%;
 }
 
 header input[type="text"] {
-  float: right;
   border: none;
   text-align: center;
   font-family: "Roboto Mono", monospace;
-  background-color: #1a1a1a;
-  background-color: var(--background-color);
+  color: var(--text-color, #f4f4f4);
+  background-color: var(--background-color, #1a1a1a);
   font-size: 2vmax;
   height: 3vmax;
+}
+
+header .search-dropdown {
+  position: absolute;
+  display: none;
+  background: var(--footer-img-color-hover, #696969);
+  padding-left: 20px;
+  padding-right: 20px;
+  top: 5vmax;
+}
+
+header .search-dropdown a {
+  cursor: pointer;
+  text-decoration: none;
+  display: block;
 }
 
 /* Main */
@@ -114,9 +131,8 @@ main .clock {
   margin: 1vmin auto;
   position: relative;
   padding: 3vmin;
-  background: #1a1a1a;
-  background: var(--background-color);
-  border: 7px solid #282828;
+  background: var(--background-color, #1a1a1a);
+  border: 7px solid var(--border-color);
   box-shadow: -4px -4px 10px rgba(67, 67, 67, 0.5),
     inset 4px 4px 10px rgba(0, 0, 0, 0.5),
     inset -4px -4px 10px rgba(67, 67, 67, 0.5), 4px 4px 10px rgba(0, 0, 0, 0.3);
@@ -142,16 +158,17 @@ main .clock {
 .outer-clock-face .marking {
   content: "";
   position: absolute;
-  width: 5px;
   height: 100%;
-  background: #f4f4f4aa;
+  background: var(--text-color, #f4f4f4);
   z-index: 0;
   left: 49%;
+  width: 5px;
+  opacity: 0.66;
 }
 
 .outer-clock-face .marking {
-  background: #f4f4f44f;
   width: 3px;
+  opacity: 0.33;
 }
 
 .outer-clock-face .marking.marking-one {
@@ -184,8 +201,7 @@ main .clock {
   left: 10%;
   width: 80%;
   height: 80%;
-  background: #1a1a1a;
-  background: var(--background-color);
+  background: var(--background-color, #1a1a1a);
   -webkit-border-radius: 100%;
   -moz-border-radius: 100%;
   border-radius: 100%;
@@ -196,15 +212,17 @@ main .hand {
   width: 32%;
   right: 50%;
   height: 12px;
-  background: #f4f4f4;
-  background: var(--text-color);
+  background: var(--text-color, #f4f4f4);
   position: absolute;
   top: 50%;
   border-radius: 10px;
   transform-origin: 100%;
   transform: rotate(90deg);
-  transition-timing-function: cubic-bezier(0.1, 2.7, 0.58, 1);
+  transition: all 1s cubic-bezier(0.645, 0.045, 0.355, 1);
   z-index: 2;
+  box-shadow: -2px -2px 5px rgba(67, 67, 67, 0.5),
+    inset 2px 2px 5px rgba(0, 0, 0, 0.5),
+    inset -2px -2px 5px rgba(67, 67, 67, 0.5), 2px 2px 5px rgba(0, 0, 0, 0.3);
 }
 
 /* Footer */
@@ -233,52 +251,57 @@ footer .link {
 footer .link img {
   cursor: pointer;
   border-radius: 0%;
-  filter: invert(93%) sepia(0%) saturate(28%) hue-rotate(159deg) brightness(84%)
-    contrast(103%);
-  filter: var(--footer-img-color-svg);
+  filter: var(
+    --footer-img-color-svg,
+    invert(93%) sepia(0%) saturate(28%) hue-rotate(159deg) brightness(84%)
+      contrast(103%)
+  );
 }
 footer .link img:hover {
-  filter: invert(44%) sepia(0%) saturate(0%) hue-rotate(147deg) brightness(88%)
-    contrast(83%);
-  filter: var(--footer-img-color-hover-svg);
+  filter: var(
+    --footer-img-color-hover-svg,
+    invert(44%) sepia(0%) saturate(0%) hue-rotate(147deg) brightness(88%)
+      contrast(83%)
+  );
 }
 
 /* Global */
 
 img.icon {
   display: flex;
-  filter: invert(82%) sepia(100%) saturate(15%) hue-rotate(355deg)
-    brightness(109%) contrast(91%);
-  filter: var(--text-color-svg);
+  filter: var(
+    --text-color-svg,
+    invert(82%) sepia(100%) saturate(15%) hue-rotate(355deg) brightness(109%)
+      contrast(91%)
+  );
 }
 img.icon.unselected {
-  filter: invert(44%) sepia(0%) saturate(0%) hue-rotate(147deg) brightness(88%)
-    contrast(83%);
-  filter: var(--icon-unselected);
+  filter: var(
+    --icon-unselected,
+    invert(44%) sepia(0%) saturate(0%) hue-rotate(147deg) brightness(88%)
+      contrast(83%)
+  );
 }
 
 button:hover img.icon {
-  filter: invert(5%) sepia(2%) saturate(48%) hue-rotate(314deg) brightness(101%)
-    contrast(89%);
-  filter: var(--background-color-svg);
+  filter: var(
+    --background-color-svg,
+    invert(5%) sepia(2%) saturate(48%) hue-rotate(314deg) brightness(101%)
+      contrast(89%)
+  );
 }
 
 button {
   padding: 15px 15px;
-  background-color: #1a1a1a;
-  background-color: var(--background-color);
-  color: #f4f4f4;
-  color: var(--text-color);
-  border: 2px solid #f4f4f4;
-  border: 2px solid var(--text-color);
+  background-color: var(--background-color, #1a1a1a);
+  color: var(--text-color, #f4f4f4);
+  border: 2px solid var(--text-color, #f4f4f4);
   cursor: pointer;
   margin: 1vmax;
   border-radius: 50px;
 }
 
 button:hover {
-  background-color: #f4f4f4;
-  background-color: var(--text-color);
-  color: #1a1a1a;
-  color: var(--background-color);
+  background-color: var(--text-color, #f4f4f4);
+  color: var(--background-color, #1a1a1a);
 }
