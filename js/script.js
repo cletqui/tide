@@ -257,8 +257,6 @@ const getTide = () => {
  */
 
 const fetchTide = async (harbour) => {
-  const response = await fetch("../tide.json");
-  //return await response.json();
   try {
     const response = await fetch(`${TIDE_DATA_URL}?id=${harbour.id}`);
     return response.json();
