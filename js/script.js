@@ -2,6 +2,16 @@
 
 const TIDE_DATA_URL = "https://api.cybai.re/tide";
 const HARBOURS_DATA_URL = "https://api.cybai.re/tide/harbours";
+
+const icons = {
+  BURGER: "./icons/menu-burger.svg",
+  COMPRESS: "./icons/compress.svg",
+  CROSS: "./icons/cross.svg",
+  EXPAND: "./icons/expand.svg",
+  MOON: "./icons/moon.svg",
+  SUN: "./icons/sun.svg",
+};
+
 const INTERVAL = 60000;
 
 /* Global Variables */
@@ -11,6 +21,24 @@ let globalHarbour = {};
 let globalTide = {};
 
 /* Display Functions */
+
+/**
+ * Shows or hides the menu and updates the menu button icon accordingly.
+ */
+const showMenu = () => {
+  const header = document.getElementById("header");
+  const menuButton = document.getElementById("menu-icon");
+  const headerClassName =
+    header.className === "menu-hidden" ? "menu-visible" : "menu-hidden";
+  const menuButtonIconSrc =
+    header.className === "menu-hidden" ? icons.CROSS : icons.BURGER;
+
+  // Update the class name of the header to show/hide the menu
+  header.className = headerClassName;
+
+  // Update the menu button's icon source to 'cross' or 'menu burger'
+  menuButton.src = menuButtonIconSrc;
+};
 
 /**
  * Initiates the theme based on the user's preferred color scheme.
@@ -23,6 +51,44 @@ const initiateTheme = () => {
   document.querySelector("html").dataset.theme = `${
     isDarkMode ? "dark" : "light"
   }-theme`;
+};
+
+/**
+ * Toggles the theme between dark mode and light mode.
+ */
+const toggleTheme = () => {
+  isDarkMode = !isDarkMode;
+
+  const iconSrc = isDarkMode ? icons.MOON : icons.SUN;
+  const themeAttribute = `${isDarkMode ? "dark" : "light"}-theme`;
+
+  // Get the element for the theme icon and update its source
+  document.getElementById("theme-icon").src = iconSrc;
+
+  // Update the 'data-theme' attribute of the <html> element based on 'isDarkMode'
+  document.querySelector("html").dataset.theme = themeAttribute;
+};
+
+/**
+ * Toggles the full screen mode and updates the full screen icon accordingly.
+ */
+const toggleFullScreen = () => {
+  /**
+   * The icon source for the full screen button.
+   *
+   * @type {string}
+   */
+  let iconSrc = document.fullscreenElement ? icons.COMPRESS : icons.EXPAND;
+
+  // Toggle full screen
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen();
+  } else if (document.exitFullscreen) {
+    document.exitFullscreen();
+  }
+
+  // Update the icon source
+  document.getElementById("full-screen-icon").src = iconSrc;
 };
 
 /**
@@ -458,6 +524,16 @@ const searchBarInput = async (event) => {
  * @returns {void}
  */
 const addEventListeners = () => {
+  document.getElementById("menu-button").addEventListener("click", showMenu);
+
+  document
+    .getElementById("theme-button")
+    .addEventListener("click", toggleTheme);
+
+  document
+    .getElementById("full-screen-button")
+    .addEventListener("click", toggleFullScreen);
+
   document.addEventListener("click", handleClickOutsideDropdown);
 
   document
