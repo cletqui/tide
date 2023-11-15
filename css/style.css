@@ -76,6 +76,7 @@ header {
   height: 6vmax;
   padding: 0.5vmax;
   padding-right: 2%;
+  z-index: 3;
 }
 
 header .search {
@@ -130,6 +131,7 @@ header .search .search-dropdown div {
 
 header .menu {
   display: flex;
+  z-index: 4;
 }
 
 header.menu-hidden {

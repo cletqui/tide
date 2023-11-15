@@ -28,16 +28,10 @@ let globalTide = {};
 const showMenu = () => {
   const header = document.getElementById("header");
   const menuButton = document.getElementById("menu-icon");
-  const headerClassName =
-    header.className === "menu-hidden" ? "menu-visible" : "menu-hidden";
-  const menuButtonIconSrc =
-    header.className === "menu-hidden" ? icons.CROSS : icons.BURGER;
-
-  // Update the class name of the header to show/hide the menu
-  header.className = headerClassName;
-
-  // Update the menu button's icon source to 'cross' or 'menu burger'
-  menuButton.src = menuButtonIconSrc;
+  header.classList.toggle("menu-hidden");
+  menuButton.src = header.classList.contains("menu-hidden")
+    ? icons.BURGER
+    : icons.CROSS;
 };
 
 /**
@@ -48,7 +42,7 @@ const showMenu = () => {
  */
 const initiateTheme = () => {
   isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches;
-  document.querySelector("html").dataset.theme = `${
+  document.documentElement.dataset.theme = `${
     isDarkMode ? "dark" : "light"
   }-theme`;
 };
@@ -58,37 +52,27 @@ const initiateTheme = () => {
  */
 const toggleTheme = () => {
   isDarkMode = !isDarkMode;
-
-  const iconSrc = isDarkMode ? icons.MOON : icons.SUN;
-  const themeAttribute = `${isDarkMode ? "dark" : "light"}-theme`;
-
-  // Get the element for the theme icon and update its source
-  document.getElementById("theme-icon").src = iconSrc;
-
-  // Update the 'data-theme' attribute of the <html> element based on 'isDarkMode'
-  document.querySelector("html").dataset.theme = themeAttribute;
+  document.getElementById("theme-icon").src = isDarkMode
+    ? icons.MOON
+    : icons.SUN;
+  document.documentElement.dataset.theme = `${
+    isDarkMode ? "dark" : "light"
+  }-theme`;
 };
 
 /**
  * Toggles the full screen mode and updates the full screen icon accordingly.
  */
-const toggleFullScreen = () => {
-  /**
-   * The icon source for the full screen button.
-   *
-   * @type {string}
-   */
-  let iconSrc = document.fullscreenElement ? icons.COMPRESS : icons.EXPAND;
 
-  // Toggle full screen
+const toggleFullScreen = () => {
   if (!document.fullscreenElement) {
     document.documentElement.requestFullscreen();
   } else if (document.exitFullscreen) {
     document.exitFullscreen();
   }
-
-  // Update the icon source
-  document.getElementById("full-screen-icon").src = iconSrc;
+  document.getElementById("full-screen-icon").src = document.fullscreenElement
+    ? icons.COMPRESS
+    : icons.EXPAND;
 };
 
 /**
@@ -101,7 +85,8 @@ const toggleFullScreen = () => {
  */
 const updateSearchBar = (harbour) => {
   const searchBar = document.getElementById("search-bar");
-  searchBar.placeholder = harbour.name;
+  searchBar.placeholder = harbour?.name || "";
+  searchBar.value = "";
 };
 
 /**
@@ -264,17 +249,12 @@ const setTime = () => {
  * @returns {Object} - The harbour object with id and name properties.
  */
 const initHarbour = () => {
-  const storedHarbour = window.localStorage.getItem("harbour");
-  const harbour = storedHarbour ? JSON.parse(storedHarbour) : null;
-
-  if (harbour && harbour.name && harbour.id) {
-    return harbour;
-  } else {
-    // TODO Implement an auto discovery of the user city
-    const harbour = { id: 72, name: "Roscoff" };
-    window.localStorage.setItem("harbour", harbour);
-    return harbour;
-  }
+  return (
+    JSON.parse(window.localStorage.getItem("harbour")) || {
+      id: 72,
+      name: "Roscoff",
+    }
+  );
 };
 
 /**
@@ -284,10 +264,7 @@ const initHarbour = () => {
  * @returns {string|null} - The harbour value, or null if not found.
  */
 const getHarbour = () => {
-  if (globalHarbour != "") {
-    return globalHarbour;
-  }
-  return window.localStorage.getItem("harbour");
+  return globalHarbour || JSON.parse(window.localStorage.getItem("harbour"));
 };
 
 /**
@@ -297,20 +274,12 @@ const getHarbour = () => {
  * @returns {Object|null} - The tide data object, or null if not found.
  */
 const getTide = () => {
-  if (Object.keys(globalTide).length) {
-    return globalTide;
-  }
-
-  const lastTide = window.localStorage.getItem("last_tide");
-  const nextTide = window.localStorage.getItem("next_tide");
-  if (lastTide && nextTide) {
-    return {
-      last_tide: JSON.parse(lastTide),
-      newt_tide: JSON.parse(nextTide),
-    };
-  }
-
-  return null;
+  return Object.keys(globalTide).length
+    ? globalTide
+    : {
+        last_tide: JSON.parse(window.localStorage.getItem("last_tide")),
+        next_tide: JSON.parse(window.localStorage.getItem("next_tide")),
+      };
 };
 
 /**
