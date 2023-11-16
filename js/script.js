@@ -3,13 +3,17 @@
 const TIDE_DATA_URL = "https://data.cybai.re/tide";
 const HARBOURS_DATA_URL = "https://data.cybai.re/tide/harbours";
 
+const iconPath = "./icons/";
+const getIconPath = (icon) => `${iconPath}${icon}.svg`;
+
 const icons = {
-  BURGER: "./icons/menu-burger.svg",
-  COMPRESS: "./icons/compress.svg",
-  CROSS: "./icons/cross.svg",
-  EXPAND: "./icons/expand.svg",
-  MOON: "./icons/moon.svg",
-  SUN: "./icons/sun.svg",
+  BURGER: getIconPath("menu-burger"),
+  COMPRESS: getIconPath("compress"),
+  CROSS: getIconPath("cross"),
+  EXPAND: getIconPath("expand"),
+  INFO: getIconPath("info"),
+  MOON: getIconPath("moon"),
+  SUN: getIconPath("sun"),
 };
 
 const INTERVAL = 60000;
@@ -75,6 +79,14 @@ const toggleFullScreen = () => {
     : icons.EXPAND;
 };
 
+const toggleInfo = () => {
+  console.log("coucou");
+  document.querySelectorAll(".info").forEach((element) => {
+    console.log("caca");
+    element.classList.toggle("show");
+  });
+};
+
 /**
  * Updates the search bar with the specified harbour information.
  *
@@ -86,6 +98,7 @@ const toggleFullScreen = () => {
 const updateSearchBar = (harbour) => {
   const searchBar = document.getElementById("search-bar");
   searchBar.placeholder = harbour?.name || "";
+  searchBar.title = harbour?.name || "Port";
   searchBar.value = "";
 };
 
@@ -106,7 +119,9 @@ const clearSearchBar = () => {
  * @returns {void}
  */
 const clearHarbour = () => {
-  document.getElementById("search-bar").placeholder = "";
+  const searchBar = document.getElementById("search-bar");
+  searchBar.placeholder = "";
+  searchBar.title = "Port";
 };
 
 /**
@@ -117,7 +132,9 @@ const clearHarbour = () => {
  */
 const showHarbour = () => {
   const { name } = getHarbour();
-  document.getElementById("search-bar").placeholder = name;
+  const searchBar = document.getElementById("search-bar");
+  searchBar.placeholder = name;
+  searchBar.title = name;
 };
 
 /**
@@ -174,6 +191,27 @@ const updateHand = (degrees) => {
   document.querySelector(
     ".hand"
   ).style.webkitTransform = `rotate(${degrees}deg)`;
+};
+
+const updateInfo = (last_tide, next_tide) => {
+  const { time: last_time, high: last_high, coeff: last_coeff } = last_tide;
+  const {
+    type: next_type,
+    time: next_time,
+    high: next_high,
+    coeff: next_coeff,
+  } = next_tide;
+
+  const last_info = `${last_time} (${last_high})`;
+  const next_info = `${next_time} (${next_high})`;
+
+  document.getElementById("pm-info").innerText =
+    next_type == "high_tide" ? next_info : last_info;
+  document.getElementById("bm-info").innerText =
+    next_type == "high_tide" ? last_info : next_info;
+  document.getElementById("coeff").innerText = last_coeff
+    ? `coeff. ${last_coeff}`
+    : `coeff. ${next_coeff}`;
 };
 
 /**
@@ -237,6 +275,7 @@ const setTime = () => {
     degrees = calculateDegrees(last_tide, next_tide);
   }
 
+  updateInfo(last_tide, next_tide);
   updateHand(degrees);
 };
 
@@ -292,6 +331,8 @@ const getTide = () => {
  */
 
 const fetchTide = async (harbour) => {
+  const response = await fetch("../tide.json");
+  return await response.json();
   try {
     const response = await fetch(`${TIDE_DATA_URL}?id=${harbour.id}`);
     return response.json();
@@ -498,10 +539,10 @@ const addEventListeners = () => {
   document
     .getElementById("theme-button")
     .addEventListener("click", toggleTheme);
-
   document
     .getElementById("full-screen-button")
     .addEventListener("click", toggleFullScreen);
+  document.getElementById("info-button").addEventListener("click", toggleInfo);
 
   document.addEventListener("click", handleClickOutsideDropdown);
 

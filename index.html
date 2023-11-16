@@ -19,7 +19,7 @@
   <body>
     <header id="header">
       <div id="search" class="search">
-        <input id="search-bar" type="text" title="search-bar" placeholder="" />
+        <input id="search-bar" type="text" title="Port" placeholder="" />
         <div id="search-dropdown" class="search-dropdown"></div>
       </div>
 
@@ -40,6 +40,9 @@
             alt="full-screen"
           />
         </button>
+        <button type="button" id="info-button">
+          <img id="info-icon" class="icon" src="./icons/info.svg" alt="info" />
+        </button>
       </div>
 
       <div class="menu-button" id="menu-button">
@@ -53,9 +56,12 @@
     </header>
 
     <main>
+      <div id="pm-info" class="info"></div>
       <div id="clock" class="clock">
         <div id="hand" class="hand"></div>
-        <div class="inner-clock-face"></div>
+        <div class="inner-clock-face">
+          <div id="coeff" class="info"></div>
+        </div>
         <div class="outer-clock-face">
           <div class="marking marking-one"></div>
           <div class="marking marking-two"></div>
@@ -63,6 +69,7 @@
           <div class="marking marking-four"></div>
         </div>
       </div>
+      <div id="bm-info" class="info"></div>
     </main>
 
     <footer>

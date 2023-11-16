@@ -111,6 +111,7 @@ header .search input {
   outline: none;
   display: inline-block;
   width: 90%;
+  font-size: 2vmax;
 }
 
 header .search input[type="text"] {
@@ -305,6 +306,17 @@ main .hand {
   box-shadow: -2px -2px 5px rgba(67, 67, 67, 0.5),
     inset 2px 2px 5px rgba(0, 0, 0, 0.5),
     inset -2px -2px 5px rgba(67, 67, 67, 0.5), 2px 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+main .info {
+  visibility: hidden;
+  opacity: 0;
+  font-size: 1vmax;
+}
+main .info.show {
+  visibility: visible;
+  opacity: .75;
+  transition: opacity 100ms ease-in-out;
 }
 
 /* Footer */
