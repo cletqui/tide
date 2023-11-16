@@ -151,7 +151,6 @@ header .search .search-dropdown div {
 header .menu {
   visibility: hidden;
   display: flex;
-  visibility: hidden;
   transition: opacity 300ms ease-in-out 200ms;
   opacity: 0;
 }
