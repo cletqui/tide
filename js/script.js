@@ -28,10 +28,10 @@ let globalTide = {};
 const showMenu = () => {
   const header = document.getElementById("header");
   const menuButton = document.getElementById("menu-icon");
-  header.classList.toggle("menu-hidden");
-  menuButton.src = header.classList.contains("menu-hidden")
-    ? icons.BURGER
-    : icons.CROSS;
+  header.classList.toggle("menu-visible");
+  menuButton.src = header.classList.contains("menu-visible")
+    ? icons.CROSS
+    : icons.BURGER;
 };
 
 /**
@@ -292,6 +292,7 @@ const getTide = () => {
  */
 
 const fetchTide = async (harbour) => {
+  return
   try {
     const response = await fetch(`${TIDE_DATA_URL}?id=${harbour.id}`);
     return response.json();
@@ -309,6 +310,7 @@ const fetchTide = async (harbour) => {
  * @returns {Promise<Object>} - A promise that resolves to the harbour data as an object.
  */
 const fetchHarbours = async (name) => {
+  return
   try {
     const response = await fetch(`${HARBOURS_DATA_URL}?name=${name}`);
     return response.json();
