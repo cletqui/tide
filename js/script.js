@@ -10,6 +10,7 @@ const icons = {
   BURGER: getIconPath("menu-burger"),
   COMPRESS: getIconPath("compress"),
   CROSS: getIconPath("cross"),
+  CROSS_CIRCLE: getIconPath("cross-circle"),
   EXPAND: getIconPath("expand"),
   INFO: getIconPath("info"),
   MOON: getIconPath("moon"),
@@ -67,7 +68,6 @@ const toggleTheme = () => {
 /**
  * Toggles the full screen mode and updates the full screen icon accordingly.
  */
-
 const toggleFullScreen = () => {
   if (!document.fullscreenElement) {
     document.documentElement.requestFullscreen();
@@ -79,12 +79,18 @@ const toggleFullScreen = () => {
     : icons.EXPAND;
 };
 
+/**
+ * Toggles the visibility of information elements and updates the info icon accordingly.
+ */
 const toggleInfo = () => {
-  console.log("coucou");
   document.querySelectorAll(".info").forEach((element) => {
-    console.log("caca");
     element.classList.toggle("show");
   });
+  document.getElementById("info-icon").src = document
+    .getElementById("coeff")
+    .classList.contains("show")
+    ? icons.CROSS_CIRCLE
+    : icons.INFO;
 };
 
 /**
@@ -193,6 +199,16 @@ const updateHand = (degrees) => {
   ).style.webkitTransform = `rotate(${degrees}deg)`;
 };
 
+/**
+ * Updates the information display with details from the last and next tide events.
+ *
+ * @param {Object} last_tide - Object containing details of the last tide event.
+ * @param {Object} next_tide - Object containing details of the next tide event.
+ * @returns {void} - The function updates the content of specific DOM elements:
+ *   - 'pm-info': Displays the time and height of the next high tide or last tide.
+ *   - 'bm-info': Displays the time and height of the last high tide or next tide.
+ *   - 'coeff': Displays the coefficient information with a fallback to 'N/A' if unavailable.
+ */
 const updateInfo = (last_tide, next_tide) => {
   const { time: last_time, high: last_high, coeff: last_coeff } = last_tide;
   const {
@@ -209,9 +225,9 @@ const updateInfo = (last_tide, next_tide) => {
     next_type == "high_tide" ? next_info : last_info;
   document.getElementById("bm-info").innerText =
     next_type == "high_tide" ? last_info : next_info;
-  document.getElementById("coeff").innerText = last_coeff
-    ? `coeff. ${last_coeff}`
-    : `coeff. ${next_coeff}`;
+  document.getElementById("coeff").innerText = `coeff. ${
+    last_coeff || next_coeff || "N/A"
+  }`;
 };
 
 /**
@@ -331,8 +347,6 @@ const getTide = () => {
  */
 
 const fetchTide = async (harbour) => {
-  const response = await fetch("../tide.json");
-  return await response.json();
   try {
     const response = await fetch(`${TIDE_DATA_URL}?id=${harbour.id}`);
     return response.json();
