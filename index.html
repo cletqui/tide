@@ -18,8 +18,38 @@
 
   <body>
     <header id="header" class="menu-hidden">
-      <input id="search-bar" type="text" title="search-bar" placeholder="" />
-      <div id="search-dropdown" class="search-dropdown"></div>
+      <div id="search" class="search">
+        <input id="search-bar" type="text" title="search-bar" placeholder="" />
+        <div id="search-dropdown" class="search-dropdown"></div>
+      </div>
+
+      <div id="menu" class="menu">
+        <button type="button" id="theme-button">
+          <img
+            id="theme-icon"
+            class="icon"
+            src="./icons/moon.svg"
+            alt="theme"
+          />
+        </button>
+        <button type="button" id="full-screen-button">
+          <img
+            id="full-screen-icon"
+            class="icon"
+            src="./icons/compress.svg"
+            alt="full-screen"
+          />
+        </button>
+      </div>
+
+      <div class="menu-button" id="menu-button">
+        <img
+          id="menu-icon"
+          class="icon"
+          src="./icons/menu-burger.svg"
+          alt="menu"
+        />
+      </div>
     </header>
 
     <main>

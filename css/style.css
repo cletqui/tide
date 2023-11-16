@@ -66,24 +66,35 @@ body {
 
 header {
   display: flex;
-  vertical-align: middle;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  justify-content: center;
-  text-align: center;
+  justify-content: right;
+  text-align: right;
   position: fixed;
   top: 0;
   width: 100%;
   height: 6vmax;
+  padding: 0.5vmax;
+  padding-right: 2%;
+  z-index: 3;
 }
 
-header input {
+header .search {
+  position: absolute;
+  text-align: center;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+header .search input {
   outline: none;
   display: inline-block;
   width: 90%;
 }
 
-header input[type="text"] {
+header .search input[type="text"] {
   border: none;
   text-align: center;
   font-family: "Roboto Mono", monospace;
@@ -93,19 +104,87 @@ header input[type="text"] {
   height: 3vmax;
 }
 
-header .search-dropdown {
+header .search .search-dropdown {
   position: absolute;
   display: none;
   background: var(--footer-img-color-hover, #696969);
+  border-radius: 5px;
+  left: 0;
+  right: 0;
+  width: -moz-fit-content;
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
   padding-left: 20px;
   padding-right: 20px;
   top: 5vmax;
 }
 
-header .search-dropdown a {
+header .search .search-dropdown a {
   cursor: pointer;
   text-decoration: none;
   display: block;
+}
+header .search .search-dropdown div {
+  opacity: 50%;
+}
+
+header .menu {
+  display: flex;
+  z-index: 4;
+}
+
+header.menu-hidden {
+  transition: background-image 0.3s ease-in-out;
+  background-image: none;
+}
+header.menu-hidden .search {
+  visibility: visible;
+  opacity: 1;
+  transition: visibility 0s linear 0.2s, opacity 0.2s;
+}
+header.menu-hidden .menu {
+  transition: opacity 0.3s ease-in-out;
+  opacity: 0;
+}
+
+header.menu-visible {
+  transition: background-image 0.3s ease-in-out;
+  background-image: linear-gradient(
+    200deg,
+    var(--header-background-color),
+    var(--background-color) 69%
+  );
+}
+header.menu-visible .search {
+  visibility: hidden;
+  opacity: 0;
+  transition: visibility 0s linear 0.2s, opacity 0.2s;
+}
+header.menu-visible .menu {
+  transition: opacity 0.3s ease-in-out;
+  opacity: 1;
+}
+
+header .menu button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-left: 1vmin;
+  margin-right: 1vmin;
+  height: 4vmax;
+  width: 4vmax;
+}
+
+header img.icon {
+  height: 2vmax;
+  width: 2vmax;
+}
+
+header .menu-button {
+  padding-left: 2%;
+  padding-right: 2%;
+  cursor: pointer;
 }
 
 /* Main */
@@ -257,6 +336,7 @@ footer .link img {
       contrast(103%)
   );
 }
+
 footer .link img:hover {
   filter: var(
     --footer-img-color-hover-svg,

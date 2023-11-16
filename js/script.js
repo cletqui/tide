@@ -2,6 +2,16 @@
 
 const TIDE_DATA_URL = "https://data.cybai.re/tide";
 const HARBOURS_DATA_URL = "https://data.cybai.re/tide/harbours";
+
+const icons = {
+  BURGER: "./icons/menu-burger.svg",
+  COMPRESS: "./icons/compress.svg",
+  CROSS: "./icons/cross.svg",
+  EXPAND: "./icons/expand.svg",
+  MOON: "./icons/moon.svg",
+  SUN: "./icons/sun.svg",
+};
+
 const INTERVAL = 60000;
 
 /* Global Variables */
@@ -13,6 +23,18 @@ let globalTide = {};
 /* Display Functions */
 
 /**
+ * Shows or hides the menu and updates the menu button icon accordingly.
+ */
+const showMenu = () => {
+  const header = document.getElementById("header");
+  const menuButton = document.getElementById("menu-icon");
+  header.classList.toggle("menu-hidden");
+  menuButton.src = header.classList.contains("menu-hidden")
+    ? icons.BURGER
+    : icons.CROSS;
+};
+
+/**
  * Initiates the theme based on the user's preferred color scheme.
  *
  * @function initiateTheme
@@ -20,9 +42,37 @@ let globalTide = {};
  */
 const initiateTheme = () => {
   isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches;
-  document.querySelector("html").dataset.theme = `${
+  document.documentElement.dataset.theme = `${
     isDarkMode ? "dark" : "light"
   }-theme`;
+};
+
+/**
+ * Toggles the theme between dark mode and light mode.
+ */
+const toggleTheme = () => {
+  isDarkMode = !isDarkMode;
+  document.getElementById("theme-icon").src = isDarkMode
+    ? icons.MOON
+    : icons.SUN;
+  document.documentElement.dataset.theme = `${
+    isDarkMode ? "dark" : "light"
+  }-theme`;
+};
+
+/**
+ * Toggles the full screen mode and updates the full screen icon accordingly.
+ */
+
+const toggleFullScreen = () => {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen();
+  } else if (document.exitFullscreen) {
+    document.exitFullscreen();
+  }
+  document.getElementById("full-screen-icon").src = document.fullscreenElement
+    ? icons.COMPRESS
+    : icons.EXPAND;
 };
 
 /**
@@ -35,7 +85,8 @@ const initiateTheme = () => {
  */
 const updateSearchBar = (harbour) => {
   const searchBar = document.getElementById("search-bar");
-  searchBar.placeholder = harbour.name;
+  searchBar.placeholder = harbour?.name || "";
+  searchBar.value = "";
 };
 
 /**
@@ -198,17 +249,12 @@ const setTime = () => {
  * @returns {Object} - The harbour object with id and name properties.
  */
 const initHarbour = () => {
-  const storedHarbour = window.localStorage.getItem("harbour");
-  const harbour = storedHarbour ? JSON.parse(storedHarbour) : null;
-
-  if (harbour && harbour.name && harbour.id) {
-    return harbour;
-  } else {
-    // TODO Implement an auto discovery of the user city
-    const harbour = { id: 72, name: "Roscoff" };
-    window.localStorage.setItem("harbour", harbour);
-    return harbour;
-  }
+  return (
+    JSON.parse(window.localStorage.getItem("harbour")) || {
+      id: 72,
+      name: "Roscoff",
+    }
+  );
 };
 
 /**
@@ -218,10 +264,7 @@ const initHarbour = () => {
  * @returns {string|null} - The harbour value, or null if not found.
  */
 const getHarbour = () => {
-  if (globalHarbour != "") {
-    return globalHarbour;
-  }
-  return window.localStorage.getItem("harbour");
+  return globalHarbour || JSON.parse(window.localStorage.getItem("harbour"));
 };
 
 /**
@@ -231,20 +274,12 @@ const getHarbour = () => {
  * @returns {Object|null} - The tide data object, or null if not found.
  */
 const getTide = () => {
-  if (Object.keys(globalTide).length) {
-    return globalTide;
-  }
-
-  const lastTide = window.localStorage.getItem("last_tide");
-  const nextTide = window.localStorage.getItem("next_tide");
-  if (lastTide && nextTide) {
-    return {
-      last_tide: JSON.parse(lastTide),
-      newt_tide: JSON.parse(nextTide),
-    };
-  }
-
-  return null;
+  return Object.keys(globalTide).length
+    ? globalTide
+    : {
+        last_tide: JSON.parse(window.localStorage.getItem("last_tide")),
+        next_tide: JSON.parse(window.localStorage.getItem("next_tide")),
+      };
 };
 
 /**
@@ -458,6 +493,16 @@ const searchBarInput = async (event) => {
  * @returns {void}
  */
 const addEventListeners = () => {
+  document.getElementById("menu-button").addEventListener("click", showMenu);
+
+  document
+    .getElementById("theme-button")
+    .addEventListener("click", toggleTheme);
+
+  document
+    .getElementById("full-screen-button")
+    .addEventListener("click", toggleFullScreen);
+
   document.addEventListener("click", handleClickOutsideDropdown);
 
   document

@@ -45,12 +45,19 @@ Feel free to visit and explore the website!
 
 ## Roadmap
 
-[x] Implement search functionality (dropdown selection, nearest harbour)
-[] Responsive design for mobile
-[] Geolocate the user to use the nearest harbour
-[] Display more data on screen (tide high, coeff, current tide status, next high or low tide time, tide height, and tide trend.)
-[] Handle errors graphically
-[] Add options in website header
+- [x] Implement search functionality (dropdown selection, nearest harbour)
+
+- [ ] Implement more efficient localStorage usage with tideData
+
+- [ ] Responsive design for mobile
+
+- [ ] Geolocate the user to use the nearest harbour
+
+- [ ] Display more data on screen (tide high, coeff, current tide status, next high or low tide time, tide height, and tide trend.)
+
+- [ ] Handle errors graphically
+
+- [ ] Add options in website header
 
 ## Contributing
 
