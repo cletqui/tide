@@ -1,7 +1,7 @@
 /* Global Constants */
 
-const TIDE_DATA_URL = "https://api.cybai.re/tide";
-const HARBOURS_DATA_URL = "https://api.cybai.re/tide/harbours";
+const TIDE_DATA_URL = "https://data.cybai.re/tide";
+const HARBOURS_DATA_URL = "https://data.cybai.re/tide/harbours";
 const INTERVAL = 60000;
 
 /* Global Variables */
