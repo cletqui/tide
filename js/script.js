@@ -58,8 +58,8 @@ const initiateTheme = () => {
 const toggleTheme = () => {
   isDarkMode = !isDarkMode;
   document.getElementById("theme-icon").src = isDarkMode
-    ? icons.MOON
-    : icons.SUN;
+    ? icons.SUN
+    : icons.MOON;
   document.documentElement.dataset.theme = `${
     isDarkMode ? "dark" : "light"
   }-theme`;
@@ -75,8 +75,8 @@ const toggleFullScreen = () => {
     document.exitFullscreen();
   }
   document.getElementById("full-screen-icon").src = document.fullscreenElement
-    ? icons.COMPRESS
-    : icons.EXPAND;
+    ? icons.EXPAND
+    : icons.COMPRESS;
 };
 
 /**
