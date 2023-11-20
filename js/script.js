@@ -1,6 +1,6 @@
 /* Global Constants */
 
-const TIDE_DATA_URL = "http://0.0.0.0:34345/tide";
+const TIDE_DATA_URL = "https://data.cybai.re/tide";
 const HARBOURS_DATA_URL = "https://data.cybai.re/tide/harbours";
 
 const iconPath = "./icons/";
