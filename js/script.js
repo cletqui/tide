@@ -1,6 +1,6 @@
 /* Global Constants */
 
-const TIDE_DATA_URL = "https://data.cybai.re/tide";
+const TIDE_DATA_URL = "http://0.0.0.0:34345/tide";
 const HARBOURS_DATA_URL = "https://data.cybai.re/tide/harbours";
 
 const iconPath = "./icons/";
@@ -348,7 +348,10 @@ const getTide = () => {
 
 const fetchTide = async (harbour) => {
   try {
-    const response = await fetch(`${TIDE_DATA_URL}?id=${harbour.id}`);
+    const response = await fetch(`${TIDE_DATA_URL}?id=${harbour.id}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json; charset=UTF-8" },
+    });
     return response.json();
   } catch (error) {
     throw new Error(`Error fetching tide data: ${error}`);
@@ -365,7 +368,10 @@ const fetchTide = async (harbour) => {
  */
 const fetchHarbours = async (name) => {
   try {
-    const response = await fetch(`${HARBOURS_DATA_URL}?name=${name}`);
+    const response = await fetch(`${HARBOURS_DATA_URL}?name=${name}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json; charset=UTF-8" },
+    });
     return response.json();
   } catch (error) {
     throw new Error(`Error fetching harbour data: ${error}`);
