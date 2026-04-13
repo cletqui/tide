@@ -206,11 +206,9 @@ main .clock {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  position: relative;
   align-items: center;
   width: 50vmin;
   height: 50vmin;
-  border-radius: 50%;
   margin: 1vmin auto;
   position: relative;
   padding: 3vmin;
@@ -311,12 +309,17 @@ main .hand {
 main .info {
   visibility: hidden;
   opacity: 0;
-  font-size: 1vmax;
+  font-size: 1.1vmax;
+  transition: opacity 200ms ease-in-out;
 }
 main .info.show {
   visibility: visible;
   opacity: .75;
-  transition: opacity 100ms ease-in-out;
+}
+
+main .clock.loading {
+  opacity: 0.4;
+  transition: opacity 300ms ease-in-out;
 }
 
 /* Footer */
