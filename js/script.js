@@ -46,10 +46,10 @@ const showMenu = () => {
  * @returns {void}
  */
 const initiateTheme = () => {
-  isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches;
-  document.documentElement.dataset.theme = `${
-    isDarkMode ? "dark" : "light"
-  }-theme`;
+  const saved = window.localStorage.getItem("theme");
+  isDarkMode = saved ? saved === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+  document.documentElement.dataset.theme = `${isDarkMode ? "dark" : "light"}-theme`;
+  document.getElementById("theme-icon").src = isDarkMode ? icons.SUN : icons.MOON;
 };
 
 /**
@@ -57,12 +57,9 @@ const initiateTheme = () => {
  */
 const toggleTheme = () => {
   isDarkMode = !isDarkMode;
-  document.getElementById("theme-icon").src = isDarkMode
-    ? icons.SUN
-    : icons.MOON;
-  document.documentElement.dataset.theme = `${
-    isDarkMode ? "dark" : "light"
-  }-theme`;
+  window.localStorage.setItem("theme", isDarkMode ? "dark" : "light");
+  document.getElementById("theme-icon").src = isDarkMode ? icons.SUN : icons.MOON;
+  document.documentElement.dataset.theme = `${isDarkMode ? "dark" : "light"}-theme`;
 };
 
 /**
@@ -71,12 +68,11 @@ const toggleTheme = () => {
 const toggleFullScreen = () => {
   if (!document.fullscreenElement) {
     document.documentElement.requestFullscreen();
-  } else if (document.exitFullscreen) {
+    document.getElementById("full-screen-icon").src = icons.COMPRESS;
+  } else {
     document.exitFullscreen();
+    document.getElementById("full-screen-icon").src = icons.EXPAND;
   }
-  document.getElementById("full-screen-icon").src = document.fullscreenElement
-    ? icons.EXPAND
-    : icons.COMPRESS;
 };
 
 /**
@@ -126,7 +122,7 @@ const clearSearchBar = () => {
  */
 const clearHarbour = () => {
   const searchBar = document.getElementById("search-bar");
-  searchBar.placeholder = "";
+  searchBar.placeholder = "Nom du port...";
   searchBar.title = "Port";
 };
 
@@ -180,7 +176,8 @@ function handleClickOutsideDropdown(event) {
 
   if (
     dropdown.style.display === "block" &&
-    (!dropdown.contains(event.target) || !searchBar.contains(event.target))
+    !dropdown.contains(event.target) &&
+    !searchBar.contains(event.target)
   ) {
     hideDropdown();
   }
@@ -194,9 +191,9 @@ function handleClickOutsideDropdown(event) {
  * @returns {void}
  */
 const updateHand = (degrees) => {
-  document.querySelector(
-    ".hand"
-  ).style.webkitTransform = `rotate(${degrees}deg)`;
+  const hand = document.querySelector(".hand");
+  hand.style.transform = `rotate(${degrees}deg)`;
+  hand.style.webkitTransform = `rotate(${degrees}deg)`;
 };
 
 /**
@@ -210,24 +207,22 @@ const updateHand = (degrees) => {
  *   - 'coeff': Displays the coefficient information with a fallback to 'N/A' if unavailable.
  */
 const updateInfo = (last_tide, next_tide) => {
-  const { time: last_time, high: last_high, coeff: last_coeff } = last_tide;
-  const {
-    type: next_type,
-    time: next_time,
-    high: next_high,
-    coeff: next_coeff,
-  } = next_tide;
+  if (!last_tide || !next_tide) return;
 
-  const last_info = `${last_time} (${last_high})`;
-  const next_info = `${next_time} (${next_high})`;
+  const { time: last_time, high: last_high, coeff: last_coeff, coeff_label: last_label } = last_tide;
+  const { type: next_type, time: next_time, high: next_high, coeff: next_coeff, coeff_label: next_label } = next_tide;
 
-  document.getElementById("pm-info").innerText =
-    next_type == "high_tide" ? next_info : last_info;
-  document.getElementById("bm-info").innerText =
-    next_type == "high_tide" ? last_info : next_info;
-  document.getElementById("coeff").innerText = `coeff. ${
-    last_coeff || next_coeff || "N/A"
-  }`;
+  const last_info = `${last_time} · ${last_high}`;
+  const next_info = `${next_time} · ${next_high}`;
+
+  document.getElementById("pm-info").innerText = `PM  ${next_type === "high_tide" ? next_info : last_info}`;
+  document.getElementById("bm-info").innerText = `BM  ${next_type === "high_tide" ? last_info : next_info}`;
+
+  const coeff_val = last_coeff || next_coeff;
+  const coeff_label = last_label || next_label;
+  document.getElementById("coeff").innerText = coeff_val
+    ? `coeff. ${coeff_val}${coeff_label ? ` · ${coeff_label}` : ""}`
+    : "";
 };
 
 /**
@@ -266,33 +261,51 @@ const setTide = (tide) => {
 const setTime = () => {
   const { last_tide, next_tide } = getTide();
   let degrees = 0;
+  let effective_last = last_tide;
 
   if (last_tide && Object.keys(last_tide).length > 0) {
-    if (calculateDegrees(last_tide, next_tide)) {
-      degrees = calculateDegrees(last_tide, next_tide);
+    const d = calculateDegrees(last_tide, next_tide);
+    if (d !== null) {
+      degrees = d;
     } else {
-      degrees = next_tide_type == "high_tide" ? 90 : 270; // Keep hand in specific place regarding the last known tide type
+      degrees = next_tide.type === "high_tide" ? 90 : 270; // Keep hand positioned relative to the last known tide type
       fetchTide(globalHarbour).then((tideData) => setTide(tideData)); // Update tide data to fetch new next tide
     }
   } else if (next_tide && Object.keys(next_tide).length > 0) {
     const { type, timestamp } = next_tide;
 
-    const extrapolate_date = createDateObject(timestamp); // Construct a fictional last tide date 6 hours before the next date
+    const extrapolate_date = createDateObject(timestamp); // Construct a fictional last tide date 6 hours before the next tide
     extrapolate_date.setHours(extrapolate_date.getHours() - 6);
 
-    const last_tide = {
-      type: type == "low_tide" ? "high_tide" : "low_tide",
-      time: `${extrapolate_date.getHours()}h${extrapolate_date.getMinutes()}`,
-      high: "unknown",
+    effective_last = {
+      type: type === "low_tide" ? "high_tide" : "low_tide",
+      time: `${extrapolate_date.getHours()}h${String(extrapolate_date.getMinutes()).padStart(2, "0")}`,
+      high: "N/A",
       timestamp: extrapolate_date.toLocaleString("fr-FR", {
         timeZone: "Europe/Paris",
       }),
     };
-    degrees = calculateDegrees(last_tide, next_tide);
+    degrees = calculateDegrees(effective_last, next_tide);
   }
 
-  updateInfo(last_tide, next_tide);
+  if (effective_last && next_tide) updateInfo(effective_last, next_tide);
   updateHand(degrees);
+};
+
+/**
+ * Toggles the loading state on the clock face.
+ */
+const setLoading = (isLoading) => {
+  document.getElementById("clock").classList.toggle("loading", isLoading);
+};
+
+/**
+ * Briefly shows an error message in the search bar placeholder.
+ */
+const showError = (message) => {
+  const searchBar = document.getElementById("search-bar");
+  searchBar.placeholder = message;
+  setTimeout(() => showHarbour(), 3000);
 };
 
 /* Operating Functions */
@@ -347,14 +360,15 @@ const getTide = () => {
  */
 
 const fetchTide = async (harbour) => {
+  setLoading(true);
   try {
-    const response = await fetch(`${TIDE_DATA_URL}?id=${harbour.id}`, {
-      method: "GET",
-      headers: { "Content-Type": "application/json; charset=UTF-8" },
-    });
-    return response.json();
+    const response = await fetch(`${TIDE_DATA_URL}?id=${harbour.id}`);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return await response.json();
   } catch (error) {
     throw new Error(`Error fetching tide data: ${error}`);
+  } finally {
+    setLoading(false);
   }
 };
 
@@ -368,10 +382,7 @@ const fetchTide = async (harbour) => {
  */
 const fetchHarbours = async (name) => {
   try {
-    const response = await fetch(`${HARBOURS_DATA_URL}?name=${name}`, {
-      method: "GET",
-      headers: { "Content-Type": "application/json; charset=UTF-8" },
-    });
+    const response = await fetch(`${HARBOURS_DATA_URL}?name=${encodeURIComponent(name)}`);
     return response.json();
   } catch (error) {
     throw new Error(`Error fetching harbour data: ${error}`);
@@ -436,6 +447,7 @@ const appendHarbours = (dropdown, harbours, titleText, titleId) => {
   dropdown.appendChild(titleChild);
 
   for (const harbour of harbours) {
+    if (!harbour.harbour) continue;
     const harbourChild = document.createElement("a");
     harbourChild.id = harbour.harbour.id;
     harbourChild.innerText = harbour.harbour.name;
@@ -456,16 +468,19 @@ const appendHarbours = (dropdown, harbours, titleText, titleId) => {
 const selectDropdown = async (event) => {
   const harbour = { id: event.target.id, name: event.target.innerText };
   setHarbour(harbour);
+  hideDropdown();
 
-  const tide = await fetchTide(harbour);
-  setTide(tide);
-
-  setTime();
+  try {
+    const tide = await fetchTide(harbour);
+    setTide(tide);
+    setTime();
+  } catch {
+    showError("Erreur de chargement");
+  }
 
   clearSearchBar();
   updateSearchBar(harbour);
   document.activeElement.blur();
-  hideDropdown();
 };
 
 /**
@@ -520,27 +535,35 @@ const calculateDegrees = (last_tide, next_tide) => {
  */
 const searchBarInput = async (event) => {
   if (event.key === "Enter") {
-    const searchInput = event.target.value;
-    const nearestHarbours = await fetchHarbours(searchInput);
+    const searchInput = event.target.value.trim();
+    if (!searchInput) return;
 
-    if (nearestHarbours.hasOwnProperty("harbour")) {
-      const { harbour } = nearestHarbours;
-      clearSearchBar();
-      setHarbour(harbour);
-      updateSearchBar(harbour);
+    try {
+      const nearestHarbours = await fetchHarbours(searchInput);
 
-      const tide = await fetchTide(harbour);
-      setTide(tide);
+      if ("harbour" in nearestHarbours) {
+        const { harbour } = nearestHarbours;
+        clearSearchBar();
+        setHarbour(harbour);
+        updateSearchBar(harbour);
 
-      setTime();
+        try {
+          const tide = await fetchTide(harbour);
+          setTide(tide);
+          setTime();
+        } catch {
+          showError("Erreur de chargement");
+        }
 
-      document.activeElement.blur();
-    } else if (
-      nearestHarbours.hasOwnProperty("availableHarbours") ||
-      nearestHarbours.hasOwnProperty("nearHarbours")
-    ) {
-      createDropdown(nearestHarbours);
-      showDropdown();
+        document.activeElement.blur();
+      } else if ("availableHarbours" in nearestHarbours || "nearHarbours" in nearestHarbours) {
+        createDropdown(nearestHarbours);
+        showDropdown();
+      } else {
+        showError("Port introuvable");
+      }
+    } catch {
+      showError("Erreur de connexion");
     }
   }
 };
@@ -584,9 +607,13 @@ document.addEventListener("DOMContentLoaded", async function () {
   const harbour = initHarbour();
   setHarbour(harbour);
 
-  const tide = await fetchTide(harbour);
-  setTide(tide);
+  try {
+    const tide = await fetchTide(harbour);
+    setTide(tide);
+    setTime();
+  } catch {
+    showError("Erreur de chargement");
+  }
 
-  setTime();
   setInterval(setTime, INTERVAL);
 });
