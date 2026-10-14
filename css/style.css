@@ -127,8 +127,12 @@ header .search input[type="text"] {
 header .search .search-dropdown {
   position: absolute;
   display: none;
-  background: var(--footer-img-color-hover, #696969);
-  border-radius: 5px;
+  background: var(--background-color, #1a1a1a);
+  border: 2px solid var(--text-color, #f4f4f4);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  z-index: 10;
+  font-size: clamp(14px, 1.8vmax, 20px);
+  border-radius: 8px;
   left: 0;
   right: 0;
   width: -moz-fit-content;
@@ -144,9 +148,17 @@ header .search .search-dropdown a {
   cursor: pointer;
   text-decoration: none;
   display: block;
+  padding: 8px 4px;
+  border-radius: 4px;
+}
+header .search .search-dropdown a:hover {
+  background: var(--text-color, #f4f4f4);
+  color: var(--background-color, #1a1a1a);
 }
 header .search .search-dropdown div {
-  opacity: 50%;
+  opacity: 60%;
+  padding-top: 6px;
+  font-size: 0.8em;
 }
 
 header .menu {
@@ -320,10 +332,17 @@ main .hand {
     inset -2px -2px 5px rgba(67, 67, 67, 0.5), 2px 2px 5px rgba(0, 0, 0, 0.3);
 }
 
+main .status {
+  margin: 1vmin 0;
+  padding: 0 4vmin;
+  font-size: clamp(14px, 2vmax, 22px);
+  min-height: 1.5em;
+}
+
 main .info {
   visibility: hidden;
   opacity: 0;
-  font-size: 1.1vmax;
+  font-size: clamp(12px, 1.6vmax, 18px);
   transition: opacity 200ms ease-in-out;
 }
 main .info.show {

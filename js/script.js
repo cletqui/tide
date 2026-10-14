@@ -91,15 +91,29 @@ const toggleFullScreen = () => {
 /**
  * Toggles the visibility of information elements and updates the info icon accordingly.
  */
-const toggleInfo = () => {
+const setInfoVisible = (visible) => {
   document.querySelectorAll(".info").forEach((element) => {
-    element.classList.toggle("show");
+    element.classList.toggle("show", visible);
   });
-  document.getElementById("info-icon").src = document
-    .getElementById("coeff")
-    .classList.contains("show")
+  document.getElementById("info-icon").src = visible
     ? icons.CROSS_CIRCLE
     : icons.INFO;
+};
+
+const toggleInfo = () => {
+  const visible = !document.getElementById("coeff").classList.contains("show");
+  try {
+    window.localStorage.setItem("info", visible ? "on" : "off");
+  } catch {}
+  setInfoVisible(visible);
+};
+
+const initInfo = () => {
+  let stored = null;
+  try {
+    stored = window.localStorage.getItem("info");
+  } catch {}
+  setInfoVisible(stored !== "off");
 };
 
 /**
@@ -233,9 +247,8 @@ const updateInfo = (last_tide, next_tide) => {
 
   const coeff_val = last_coeff || next_coeff;
   const coeff_label = last_label || next_label;
-  document.getElementById("coeff").innerText = coeff_val
-    ? `coeff. ${coeff_val}${coeff_label ? ` · ${coeff_label}` : ""}`
-    : "";
+  document.getElementById("coeff").innerText = coeff_val ? `coeff. ${coeff_val}` : "";
+  currentCoeffLabel = coeff_label || "";
 };
 
 /**
@@ -302,6 +315,7 @@ const setTime = () => {
   }
 
   if (effective_last && next_tide) updateInfo(effective_last, next_tide);
+  updateStatus(next_tide);
   updateHand(degrees ?? 0);
 };
 
@@ -316,12 +330,55 @@ const refreshTide = async () => {
   refreshing = true;
   try {
     setTide(await fetchTide(getHarbour()));
+    offline = false;
     setTime();
   } catch {
     // keep showing the last known state
+    offline = true;
+    updateStatus(getTide().next_tide);
   } finally {
     refreshing = false;
   }
+};
+
+/**
+ * Formats a duration in milliseconds as "2h39" or "45 min".
+ */
+const formatDuration = (ms) => {
+  const minutes = Math.max(0, Math.round(ms / 60000));
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return h > 0 ? `${h}h${String(m).padStart(2, "0")}` : `${m} min`;
+};
+
+let offline = false;
+let currentCoeffLabel = "";
+
+/**
+ * Writes the always-visible summary under the clock: tide direction, the next
+ * tide and the time left until it, plus an offline marker when the last
+ * refresh failed.
+ */
+const updateStatus = (next_tide) => {
+  const status = document.getElementById("status");
+  if (!next_tide) {
+    status.textContent = offline ? "Hors ligne" : "";
+    return;
+  }
+
+  const now = createDateObject(
+    new Date().toLocaleString("fr-FR", { timeZone: "Europe/Paris" })
+  );
+  const remaining = createDateObject(next_tide.timestamp) - now;
+  const rising = next_tide.type === "high_tide";
+
+  const parts = [
+    `${rising ? "▲ Marée montante" : "▼ Marée descendante"}`,
+    `${rising ? "pleine mer" : "basse mer"} à ${next_tide.time} (dans ${formatDuration(remaining)})`,
+  ];
+  if (currentCoeffLabel) parts.push(currentCoeffLabel);
+  if (offline) parts.push("hors ligne");
+  status.textContent = parts.join(" · ");
 };
 
 /**
@@ -558,6 +615,62 @@ const calculateDegrees = (last_tide, next_tide) => {
   }
 };
 
+let harbourList = null;
+
+/**
+ * Loads the full { id: name } harbour list once, for local autocomplete.
+ */
+const loadHarbourList = async () => {
+  if (harbourList) return harbourList;
+  try {
+    const response = await fetch(HARBOURS_DATA_URL);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    harbourList = Object.entries(await response.json()).map(([id, name]) => ({
+      id,
+      name,
+      key: normalize(name),
+    }));
+  } catch {
+    harbourList = null;
+  }
+  return harbourList;
+};
+
+const normalize = (text) =>
+  text
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+
+/**
+ * Suggests harbours matching the typed text, prefix matches first.
+ */
+const suggestHarbours = async (event) => {
+  const query = normalize(event.target.value.trim());
+  if (query.length < 2) {
+    hideDropdown();
+    return;
+  }
+
+  const list = await loadHarbourList();
+  if (!list || normalize(event.target.value.trim()) !== query) return;
+
+  const matches = list
+    .filter((h) => h.key.includes(query))
+    .sort((a, b) => Number(b.key.startsWith(query)) - Number(a.key.startsWith(query)) || a.name.localeCompare(b.name))
+    .slice(0, 8);
+
+  hideDropdown();
+  if (matches.length === 0) return;
+  appendHarbours(
+    document.getElementById("search-dropdown"),
+    matches.map((harbour) => ({ harbour })),
+    "Ports :",
+    "availableHarbours"
+  );
+  showDropdown();
+};
+
 /**
  * Handles the input event of a search bar.
  *
@@ -634,11 +747,13 @@ const addEventListeners = () => {
   document
     .getElementById("search-bar")
     .addEventListener("keydown", searchBarInput);
+  document.getElementById("search-bar").addEventListener("input", suggestHarbours);
 };
 
 document.addEventListener("DOMContentLoaded", async function () {
   addEventListeners();
   initiateTheme();
+  initInfo();
 
   const harbour = initHarbour();
   setHarbour(harbour);
@@ -646,10 +761,15 @@ document.addEventListener("DOMContentLoaded", async function () {
   try {
     const tide = await fetchTide(harbour);
     setTide(tide);
-    setTime();
   } catch {
+    offline = true;
     showError("Erreur de chargement");
   }
+  setTime();
 
   setInterval(setTime, INTERVAL);
+
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("./sw.js").catch(() => {});
+  }
 });
