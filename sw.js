@@ -1,4 +1,4 @@
-const CACHE = "tide-v1";
+const CACHE = "tide-v2";
 const SHELL = [
   "./",
   "./css/style.css",
@@ -12,6 +12,7 @@ const SHELL = [
   "./icons/info.svg",
   "./icons/moon.svg",
   "./icons/sun.svg",
+  "./icons/translate.svg",
   "./icons/github.svg",
   "./icons/buy-me-a-coffee.svg",
   "./manifest.json",
