@@ -332,11 +332,15 @@ main .hand {
     inset -2px -2px 5px rgba(67, 67, 67, 0.5), 2px 2px 5px rgba(0, 0, 0, 0.3);
 }
 
-main .status {
+main .info.status {
   margin: 1vmin 0;
   padding: 0 4vmin;
   font-size: clamp(14px, 2vmax, 22px);
   min-height: 1.5em;
+}
+
+main .info.status:not(.show) {
+  display: none;
 }
 
 main .info {
