@@ -17,6 +17,81 @@ const icons = {
   SUN: getIconPath("sun"),
 };
 
+const LANGS = {
+  fr: {
+    locale: "fr-FR",
+    searchPlaceholder: "Nom du port...",
+    searchLabel: "Rechercher un port",
+    portTitle: "Port",
+    portsAvailable: "Port disponible:",
+    portsNear: "Port proche:",
+    portsNone: "Aucun port trouvé.",
+    portsMatching: "Ports :",
+    errLoad: "Erreur de chargement",
+    errNotFound: "Port introuvable",
+    errConnection: "Erreur de connexion",
+    rising: "Marée montante",
+    falling: "Marée descendante",
+    highTide: "pleine mer",
+    lowTide: "basse mer",
+    at: "à",
+    in: "dans",
+    offline: "hors ligne",
+    coeff: "coeff.",
+    pm: "PM",
+    bm: "BM",
+    labels: {},
+    ariaTheme: "Changer le thème",
+    ariaFullScreen: "Plein écran",
+    ariaInfo: "Afficher les détails",
+    ariaMenu: "Menu",
+    ariaClock: "Horloge de marée",
+    ariaLanguage: "Changer de langue",
+  },
+  en: {
+    locale: "en-GB",
+    searchPlaceholder: "Harbour name...",
+    searchLabel: "Search for a harbour",
+    portTitle: "Harbour",
+    portsAvailable: "Available harbour:",
+    portsNear: "Nearby harbour:",
+    portsNone: "No harbour found.",
+    portsMatching: "Harbours:",
+    errLoad: "Loading error",
+    errNotFound: "Harbour not found",
+    errConnection: "Connection error",
+    rising: "Rising tide",
+    falling: "Falling tide",
+    highTide: "high tide",
+    lowTide: "low tide",
+    at: "at",
+    in: "in",
+    offline: "offline",
+    coeff: "coeff.",
+    pm: "HW",
+    bm: "LW",
+    labels: {
+      "morte-eau": "neap tide",
+      normale: "average",
+      "vive-eau": "spring tide",
+      "vive-eau exceptionnelle": "exceptional spring",
+    },
+    ariaTheme: "Toggle theme",
+    ariaFullScreen: "Full screen",
+    ariaInfo: "Show details",
+    ariaMenu: "Menu",
+    ariaClock: "Tide clock",
+    ariaLanguage: "Change language",
+  },
+};
+
+let lang = "fr";
+try {
+  const stored = window.localStorage.getItem("lang");
+  if (stored in LANGS) lang = stored;
+} catch {}
+const tr = () => LANGS[lang];
+
 const INTERVAL = 60000;
 
 /* Global Variables */
@@ -76,6 +151,38 @@ const toggleTheme = () => {
 };
 
 /**
+ * Applies the current language to the static parts of the page, then
+ * re-renders the tide texts.
+ */
+const applyLanguage = () => {
+  const t = tr();
+  document.documentElement.lang = lang;
+  const aria = {
+    "search-bar": t.searchLabel,
+    "theme-button": t.ariaTheme,
+    "full-screen-button": t.ariaFullScreen,
+    "info-button": t.ariaInfo,
+    "menu-button": t.ariaMenu,
+    clock: t.ariaClock,
+    "language-button": t.ariaLanguage,
+  };
+  for (const [id, label] of Object.entries(aria)) {
+    document.getElementById(id).setAttribute("aria-label", label);
+  }
+  document.getElementById("language-button").title = lang === "fr" ? "English" : "Français";
+  showHarbour();
+  setTime();
+};
+
+const toggleLanguage = () => {
+  lang = lang === "fr" ? "en" : "fr";
+  try {
+    window.localStorage.setItem("lang", lang);
+  } catch {}
+  applyLanguage();
+};
+
+/**
  * Toggles the full screen mode and updates the full screen icon accordingly.
  */
 const toggleFullScreen = () => {
@@ -127,7 +234,7 @@ const initInfo = () => {
 const updateSearchBar = (harbour) => {
   const searchBar = document.getElementById("search-bar");
   searchBar.placeholder = harbour?.name || "";
-  searchBar.title = harbour?.name || "Port";
+  searchBar.title = harbour?.name || tr().portTitle;
   searchBar.value = "";
 };
 
@@ -149,8 +256,8 @@ const clearSearchBar = () => {
  */
 const clearHarbour = () => {
   const searchBar = document.getElementById("search-bar");
-  searchBar.placeholder = "Nom du port...";
-  searchBar.title = "Port";
+  searchBar.placeholder = tr().searchPlaceholder;
+  searchBar.title = tr().portTitle;
 };
 
 /**
@@ -242,13 +349,13 @@ const updateInfo = (last_tide, next_tide) => {
   const last_info = `${last_time} · ${last_high}`;
   const next_info = `${next_time} · ${next_high}`;
 
-  document.getElementById("pm-info").innerText = `PM  ${next_type === "high_tide" ? next_info : last_info}`;
-  document.getElementById("bm-info").innerText = `BM  ${next_type === "high_tide" ? last_info : next_info}`;
+  document.getElementById("pm-info").innerText = `${tr().pm}  ${next_type === "high_tide" ? next_info : last_info}`;
+  document.getElementById("bm-info").innerText = `${tr().bm}  ${next_type === "high_tide" ? last_info : next_info}`;
 
   const coeff_val = last_coeff || next_coeff;
   const coeff_label = last_label || next_label;
-  document.getElementById("coeff").innerText = coeff_val ? `coeff. ${coeff_val}` : "";
-  currentCoeffLabel = coeff_label || "";
+  document.getElementById("coeff").innerText = coeff_val ? `${tr().coeff} ${coeff_val}` : "";
+  currentCoeffLabel = coeff_label ? tr().labels[coeff_label] ?? coeff_label : "";
 };
 
 /**
@@ -362,7 +469,7 @@ let currentCoeffLabel = "";
 const updateStatus = (next_tide) => {
   const status = document.getElementById("status");
   if (!next_tide) {
-    status.textContent = offline ? "Hors ligne" : "";
+    status.textContent = offline ? tr().offline : "";
     return;
   }
 
@@ -373,11 +480,11 @@ const updateStatus = (next_tide) => {
   const rising = next_tide.type === "high_tide";
 
   const parts = [
-    `${rising ? "▲ Marée montante" : "▼ Marée descendante"}`,
-    `${rising ? "pleine mer" : "basse mer"} à ${next_tide.time} (dans ${formatDuration(remaining)})`,
+    `${rising ? "▲" : "▼"} ${rising ? tr().rising : tr().falling}`,
+    `${rising ? tr().highTide : tr().lowTide} ${tr().at} ${next_tide.time} (${tr().in} ${formatDuration(remaining)})`,
   ];
   if (currentCoeffLabel) parts.push(currentCoeffLabel);
-  if (offline) parts.push("hors ligne");
+  if (offline) parts.push(tr().offline);
   status.textContent = parts.join(" · ");
 };
 
@@ -496,7 +603,7 @@ const createDropdown = (nearestHarbours) => {
       appendHarbours(
         dropdown,
         nearestHarbours.availableHarbours,
-        "Port disponible:",
+        tr().portsAvailable,
         "availableHarbours"
       );
     }
@@ -505,7 +612,7 @@ const createDropdown = (nearestHarbours) => {
       appendHarbours(
         dropdown,
         nearestHarbours.nearHarbours,
-        "Port proche:",
+        tr().portsNear,
         "nearHarbours"
       );
     }
@@ -514,7 +621,7 @@ const createDropdown = (nearestHarbours) => {
       nearestHarbours.availableHarbours.length === 0 &&
       nearestHarbours.nearHarbours.length === 0
     ) {
-      appendHarbours(dropdown, [], "Aucun port trouvé.", "error");
+      appendHarbours(dropdown, [], tr().portsNone, "error");
     }
   }
 };
@@ -564,7 +671,7 @@ const selectDropdown = async (event) => {
     setTide(tide);
     setTime();
   } catch {
-    showError("Erreur de chargement");
+    showError(tr().errLoad);
   }
 
   clearSearchBar();
@@ -665,7 +772,7 @@ const suggestHarbours = async (event) => {
   appendHarbours(
     document.getElementById("search-dropdown"),
     matches.map((harbour) => ({ harbour })),
-    "Ports :",
+    tr().portsMatching,
     "availableHarbours"
   );
   showDropdown();
@@ -698,7 +805,7 @@ const searchBarInput = async (event) => {
           setTide(tide);
           setTime();
         } catch {
-          showError("Erreur de chargement");
+          showError(tr().errLoad);
         }
 
         document.activeElement.blur();
@@ -706,10 +813,10 @@ const searchBarInput = async (event) => {
         createDropdown(nearestHarbours);
         showDropdown();
       } else {
-        showError("Port introuvable");
+        showError(tr().errNotFound);
       }
     } catch {
-      showError("Erreur de connexion");
+      showError(tr().errConnection);
     }
   }
 };
@@ -732,6 +839,9 @@ const addEventListeners = () => {
     .getElementById("full-screen-button")
     .addEventListener("click", toggleFullScreen);
   document.getElementById("info-button").addEventListener("click", toggleInfo);
+  document
+    .getElementById("language-button")
+    .addEventListener("click", toggleLanguage);
 
   document.addEventListener("click", handleClickOutsideDropdown);
   document.addEventListener("visibilitychange", () => {
@@ -757,13 +867,14 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   const harbour = initHarbour();
   setHarbour(harbour);
+  applyLanguage();
 
   try {
     const tide = await fetchTide(harbour);
     setTide(tide);
   } catch {
     offline = true;
-    showError("Erreur de chargement");
+    showError(tr().errLoad);
   }
   setTime();
 
