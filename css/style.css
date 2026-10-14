@@ -188,7 +188,21 @@ header img.icon {
 header .menu-button {
   padding-left: 2%;
   padding-right: 2%;
+  margin: 0;
+  background: none;
+  border: 0;
+  border-radius: 0;
   cursor: pointer;
+}
+
+header .menu-button:hover {
+  background: none;
+}
+
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--text-color, #f4f4f4);
+  outline-offset: 2px;
 }
 
 /* Main */

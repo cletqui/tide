@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -10,6 +10,8 @@
     <title>Tide Clock</title>
     <script src="./js/script.js" defer></script>
     <link rel="stylesheet" href="./css/style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap"
       rel="stylesheet"
@@ -19,45 +21,53 @@
   <body>
     <header id="header">
       <div id="search" class="search">
-        <input id="search-bar" type="text" title="Port" placeholder="" />
+        <input
+          id="search-bar"
+          type="text"
+          title="Port"
+          placeholder=""
+          aria-label="Rechercher un port"
+          autocomplete="off"
+          enterkeyhint="search"
+        />
         <div id="search-dropdown" class="search-dropdown"></div>
       </div>
 
       <div id="menu" class="menu">
-        <button type="button" id="theme-button">
+        <button type="button" id="theme-button" aria-label="Changer le thème">
           <img
             id="theme-icon"
             class="icon"
             src="./icons/sun.svg"
-            alt="theme"
+            alt=""
           />
         </button>
-        <button type="button" id="full-screen-button">
+        <button type="button" id="full-screen-button" aria-label="Plein écran">
           <img
             id="full-screen-icon"
             class="icon"
             src="./icons/expand.svg"
-            alt="full-screen"
+            alt=""
           />
         </button>
-        <button type="button" id="info-button">
-          <img id="info-icon" class="icon" src="./icons/info.svg" alt="info" />
+        <button type="button" id="info-button" aria-label="Afficher les détails">
+          <img id="info-icon" class="icon" src="./icons/info.svg" alt="" />
         </button>
       </div>
 
-      <div class="menu-button" id="menu-button">
+      <button type="button" class="menu-button" id="menu-button" aria-label="Menu">
         <img
           id="menu-icon"
           class="icon"
           src="./icons/menu-burger.svg"
-          alt="menu"
+          alt=""
         />
-      </div>
+      </button>
     </header>
 
     <main>
       <div id="pm-info" class="info"></div>
-      <div id="clock" class="clock">
+      <div id="clock" class="clock" role="img" aria-label="Horloge de marée">
         <div id="hand" class="hand"></div>
         <div class="inner-clock-face">
           <div id="coeff" class="info"></div>

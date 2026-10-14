@@ -25,6 +25,19 @@ let isDarkMode = true;
 let globalHarbour = {};
 let globalTide = {};
 
+/**
+ * Reads and parses a JSON value from localStorage, returning the fallback
+ * when the key is missing, corrupted, or storage is unavailable.
+ */
+const readStored = (key, fallback = null) => {
+  try {
+    const value = JSON.parse(window.localStorage.getItem(key));
+    return value ?? fallback;
+  } catch {
+    return fallback;
+  }
+};
+
 /* Display Functions */
 
 /**
@@ -260,17 +273,11 @@ const setTide = (tide) => {
  */
 const setTime = () => {
   const { last_tide, next_tide } = getTide();
-  let degrees = 0;
+  let degrees = null;
   let effective_last = last_tide;
 
-  if (last_tide && Object.keys(last_tide).length > 0) {
-    const d = calculateDegrees(last_tide, next_tide);
-    if (d !== null) {
-      degrees = d;
-    } else {
-      degrees = next_tide.type === "high_tide" ? 90 : 270; // Keep hand positioned relative to the last known tide type
-      fetchTide(globalHarbour).then((tideData) => setTide(tideData)); // Update tide data to fetch new next tide
-    }
+  if (last_tide && Object.keys(last_tide).length > 0 && next_tide) {
+    degrees = calculateDegrees(last_tide, next_tide);
   } else if (next_tide && Object.keys(next_tide).length > 0) {
     const { type, timestamp } = next_tide;
 
@@ -288,8 +295,33 @@ const setTime = () => {
     degrees = calculateDegrees(effective_last, next_tide);
   }
 
+  if (degrees === null) {
+    // The stored cycle is over (or missing): pull fresh last/next tides.
+    if (next_tide) degrees = next_tide.type === "high_tide" ? 90 : 270;
+    refreshTide();
+  }
+
   if (effective_last && next_tide) updateInfo(effective_last, next_tide);
-  updateHand(degrees);
+  updateHand(degrees ?? 0);
+};
+
+let refreshing = false;
+
+/**
+ * Refetches the tide data for the current harbour. Concurrent calls are
+ * collapsed into one and failures are swallowed (the next tick retries).
+ */
+const refreshTide = async () => {
+  if (refreshing) return;
+  refreshing = true;
+  try {
+    setTide(await fetchTide(getHarbour()));
+    setTime();
+  } catch {
+    // keep showing the last known state
+  } finally {
+    refreshing = false;
+  }
 };
 
 /**
@@ -318,7 +350,7 @@ const showError = (message) => {
  */
 const initHarbour = () => {
   return (
-    JSON.parse(window.localStorage.getItem("harbour")) || {
+    readStored("harbour") || {
       id: 72,
       name: "Roscoff",
     }
@@ -332,7 +364,7 @@ const initHarbour = () => {
  * @returns {string|null} - The harbour value, or null if not found.
  */
 const getHarbour = () => {
-  return globalHarbour || JSON.parse(window.localStorage.getItem("harbour"));
+  return Object.keys(globalHarbour).length ? globalHarbour : readStored("harbour", {});
 };
 
 /**
@@ -345,8 +377,8 @@ const getTide = () => {
   return Object.keys(globalTide).length
     ? globalTide
     : {
-        last_tide: JSON.parse(window.localStorage.getItem("last_tide")),
-        next_tide: JSON.parse(window.localStorage.getItem("next_tide")),
+        last_tide: readStored("last_tide"),
+        next_tide: readStored("next_tide"),
       };
 };
 
@@ -516,10 +548,11 @@ const calculateDegrees = (last_tide, next_tide) => {
     const last_date = createDateObject(last_tide.timestamp);
     const next_date = createDateObject(next_tide.timestamp);
 
-    const start = next_tide.type == "low_tide" ? 90 : 270;
-    const offset = (180 * (now - last_date)) / (next_date - last_date);
+    const progress = (now - last_date) / (next_date - last_date);
+    if (!Number.isFinite(progress) || progress < 0 || progress > 1) return null;
 
-    return start + offset;
+    const start = next_tide.type == "low_tide" ? 90 : 270;
+    return start + 180 * progress;
   } catch (error) {
     return null;
   }
@@ -588,6 +621,9 @@ const addEventListeners = () => {
   document.getElementById("info-button").addEventListener("click", toggleInfo);
 
   document.addEventListener("click", handleClickOutsideDropdown);
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) setTime();
+  });
 
   document
     .getElementById("search-bar")
@@ -597,7 +633,7 @@ const addEventListeners = () => {
     .addEventListener("focusout", showHarbour);
   document
     .getElementById("search-bar")
-    .addEventListener("keypress", searchBarInput);
+    .addEventListener("keydown", searchBarInput);
 };
 
 document.addEventListener("DOMContentLoaded", async function () {
